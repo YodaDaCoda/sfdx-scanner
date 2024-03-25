@@ -141,7 +141,7 @@ class JreSetupManager extends AsyncCreatable {
 		if (majorVersion < 11) {
 			// Not matching what we are looking for
 			const errName = 'InvalidVersion';
-			throw new SfError(getMessage(BundleName.JreSetupManager, errName, [version, this.configFile]), errName);
+			throw new SfError(getMessage(BundleName.JreSetupManager, errName, [version, this.configFile, javaHome]), errName);
 		}
 
 		this.logger.trace(`Java version found as ${version}`);

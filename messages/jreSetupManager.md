@@ -19,4 +19,4 @@ If the problem persists, please manually add a 'javaHome' property to your `%s` 
 # InvalidVersion
 
 Java version %s isn't supported. Install Java 11 or later.
-If the problem persists, please manually add a 'javaHome' property to your `%s` file, referencing your Java home directory.
+If the problem persists, please manually add a 'javaHome' property to your `%s` file, referencing your Java home directory. home was %s
