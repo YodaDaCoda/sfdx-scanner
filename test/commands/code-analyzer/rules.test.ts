@@ -1,16 +1,19 @@
 import {stubSfCommandUx} from '@salesforce/sf-plugins-core';
 import {TestContext} from '@salesforce/core/lib/testSetup';
 import RulesCommand from '../../../src/commands/code-analyzer/rules';
-import {RulesAction} from '../../../src/lib/actions/RulesAction';
+import {RulesInput, RulesDependencies, RulesAction} from '../../../src/lib/actions/RulesAction';
+import {DetailUxDisplay, TableUxDisplay} from '../../../lib/lib/utils/Display';
 
 describe('`code-analyzer rules` tests', () => {
 	const $$ = new TestContext();
 
 	let spy: jest.SpyInstance;
-	let receivedActionInput: object;
+	let receivedActionDependencies: RulesDependencies;
+	let receivedActionInput: RulesInput;
 	beforeEach(() => {
 		stubSfCommandUx($$.SANDBOX);
-		spy = jest.spyOn(RulesAction.prototype, 'execute').mockImplementation((input) => {
+		spy = jest.spyOn(RulesAction.prototype, 'execute').mockImplementation((dependencies, input) => {
+			receivedActionDependencies = dependencies;
 			receivedActionInput = input;
 		});
 	});
@@ -24,14 +27,14 @@ describe('`code-analyzer rules` tests', () => {
 			const inputValue = 'abcde';
 			await RulesCommand.run(['--rule-selector', inputValue]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('rule-selector', [inputValue]);
+			expect(receivedActionInput).toHaveProperty('ruleSelector', [inputValue]);
 		});
 
 		it('Can be supplied once with multiple comma-separated values', async () => {
 			const inputValue = ['abcde', 'defgh'];
 			await RulesCommand.run(['--rule-selector', inputValue.join(',')]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('rule-selector', inputValue);
+			expect(receivedActionInput).toHaveProperty('ruleSelector', inputValue);
 		});
 
 		it('Can be supplied multiple times with one value each', async () => {
@@ -39,7 +42,7 @@ describe('`code-analyzer rules` tests', () => {
 			const inputValue2 = 'defgh';
 			await RulesCommand.run(['--rule-selector', inputValue1, '--rule-selector', inputValue2]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('rule-selector', [inputValue1, inputValue2]);
+			expect(receivedActionInput).toHaveProperty('ruleSelector', [inputValue1, inputValue2]);
 		});
 
 		it('Can be supplied multiple times with multiple comma-separated values each', async () => {
@@ -47,20 +50,20 @@ describe('`code-analyzer rules` tests', () => {
 			const inputValue2 = ['defgh', 'mnopq'];
 			await RulesCommand.run(['--rule-selector', inputValue1.join(','), '--rule-selector', inputValue2.join(',')]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('rule-selector', [...inputValue1, ...inputValue2]);
+			expect(receivedActionInput).toHaveProperty('ruleSelector', [...inputValue1, ...inputValue2]);
 		});
 
 		it('Defaults to value of "Recommended"', async () => {
 			await RulesCommand.run([]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('rule-selector', ["Recommended"]);
+			expect(receivedActionInput).toHaveProperty('ruleSelector', ["Recommended"]);
 		})
 
 		it('Can be referenced by its shortname, -r', async () => {
 			const inputValue = 'abcde';
 			await RulesCommand.run(['-r', inputValue]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('rule-selector', [inputValue]);
+			expect(receivedActionInput).toHaveProperty('ruleSelector', [inputValue]);
 		});
 	});
 
@@ -69,7 +72,7 @@ describe('`code-analyzer rules` tests', () => {
 			const inputValue = 'package.json';
 			await RulesCommand.run(['--config-file', inputValue]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('config-file', inputValue);
+			expect(receivedActionInput).toHaveProperty('configFile', inputValue);
 		});
 
 		it('Rejects non-existent file', async () => {
@@ -91,7 +94,7 @@ describe('`code-analyzer rules` tests', () => {
 			const inputValue = 'package.json';
 			await RulesCommand.run(['-c', inputValue]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('config-file', inputValue);
+			expect(receivedActionInput).toHaveProperty('configFile', inputValue);
 		});
 	});
 
@@ -100,14 +103,14 @@ describe('`code-analyzer rules` tests', () => {
 			const inputValue = 'table';
 			await RulesCommand.run(['--view', inputValue]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('view', inputValue);
+			expect(receivedActionDependencies.display.constructor.name).toEqual(TableUxDisplay.name);
 		});
 
 		it('Accepts the value, "detail"', async () => {
 			const inputValue = 'detail';
 			await RulesCommand.run(['--view', inputValue]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('view', inputValue);
+			expect(receivedActionDependencies.display.constructor.name).toEqual(DetailUxDisplay.name);
 		});
 
 		it('Rejects all other values', async () => {
@@ -115,6 +118,12 @@ describe('`code-analyzer rules` tests', () => {
 			const executionPromise = RulesCommand.run(['--view', inputValue]);
 			await expect(executionPromise).rejects.toThrow(`Expected --view=${inputValue} to be one of:`);
 			expect(spy).not.toHaveBeenCalled();
+		});
+
+		it('Defaults to value of "table"', async () => {
+			await RulesCommand.run([]);
+			expect(spy).toHaveBeenCalled();
+			expect(receivedActionDependencies.display.constructor.name).toEqual(TableUxDisplay.name);
 		});
 
 		it('Can be supplied only once', async () => {
@@ -129,7 +138,7 @@ describe('`code-analyzer rules` tests', () => {
 			const inputValue = 'table';
 			await RulesCommand.run(['-v', inputValue]);
 			expect(spy).toHaveBeenCalled();
-			expect(receivedActionInput).toHaveProperty('view', inputValue);
+			expect(receivedActionDependencies.display.constructor.name).toEqual(TableUxDisplay.name);
 		});
 	});
 });

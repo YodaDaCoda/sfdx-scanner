@@ -6,6 +6,8 @@
 	"bugs": "https://github.com/forcedotcom/sfdx-scanner/issues",
 	"dependencies": {
 		"@oclif/core": "^3.3.2",
+		"@salesforce/code-analyzer-core": "^0.1.2",
+		"@salesforce/code-analyzer-engine-api": "^0.1.2",
 		"@salesforce/core": "^5",
 		"@salesforce/sf-plugins-core": "^5.0.4",
 		"@types/node": "^17",
@@ -63,6 +65,7 @@
 	"jest": {
 		"collectCoverageFrom": [
 			"src/**/*.ts",
+			"!src/lib/SampleEnginePlugin.ts",
 			"!src/index.ts"
 		],
 		"coverageReporters": [

@@ -1,5 +1,6 @@
-import {Flags, SfCommand} from '@salesforce/sf-plugins-core';
-import {RulesAction} from '../../lib/actions/RulesAction';
+import {Ux, Flags, SfCommand} from '@salesforce/sf-plugins-core';
+import {RulesAction, RulesDependencies, RulesInput} from '../../lib/actions/RulesAction';
+import {DisplayFormat, getUxDisplayForFormat} from '../../lib/utils/Display';
 import {BundleName, getMessage} from '../../lib/messages';
 
 export default class RulesCommand extends SfCommand<void> {
@@ -27,14 +28,26 @@ export default class RulesCommand extends SfCommand<void> {
 		view: Flags.string({
 			summary: getMessage(BundleName.RulesCommand, 'flags.view.summary'),
 			char: 'v',
-			options: ['table', 'detail'] // TODO: Should probably be enum?
+			default: DisplayFormat.TABLE,
+			options: Object.values(DisplayFormat)
 		})
 	};
 
 	public async run(): Promise<void> {
 		const parsedFlags = (await this.parse(RulesCommand)).flags;
 		const action: RulesAction = new RulesAction();
-		action.execute(parsedFlags);
+		const dependencies: RulesDependencies = {
+			display: getUxDisplayForFormat(
+				// Since `view` is limited to the values of `DisplayFormat`, we can safely cast it.
+				parsedFlags.view as DisplayFormat,
+				// Can't directly access the command's UX instance, so we need to instantiate our own.
+				new Ux({jsonEnabled: false}))
+		};
+		const inputs: RulesInput = {
+			configFile: parsedFlags['config-file'],
+			ruleSelector: parsedFlags['rule-selector']
+		};
+		action.execute(dependencies, inputs);
 	}
 }
 

@@ -5,6 +5,7 @@ import {Tokens} from '@salesforce/core/lib/messages';
 Messages.importMessagesDirectory(__dirname);
 
 export enum BundleName {
+	Display = 'display',
 	InitCommand = 'init-command',
 	RulesCommand = 'rules-command',
 	RunCommand = 'run-command'
