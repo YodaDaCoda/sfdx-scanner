@@ -10,8 +10,7 @@ ProtectSensitiveDataPackageInternalOnly[](#protectsensitivedatapackageinternalon
 
 **Description:**
 
-   Detects where sensitive data must be stored with Protected
-		Custom metadata or Protected Custom settings.
+   Detects where sensitive data must be stored with Protected Custom metadata or Protected Custom settings.
 
 **Example(s):**
 
